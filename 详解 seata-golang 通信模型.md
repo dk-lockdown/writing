@@ -121,7 +121,7 @@ func (s *session) run() {
 
 ```go
 func (s *session) handleLoop() {
-  // 省略部分代码
+        // 省略部分代码
   
 	for {
 		// A select blocks until one of its cases is ready to run.
@@ -174,7 +174,7 @@ func (s *session) handleLoop() {
 
 ```go
 func (s *session) handlePackage() {
-  // 省略部分代码
+        // 省略部分代码
 
 	if _, ok := s.Connection.(*gettyTCPConn); ok {
 		if s.reader == nil {
@@ -198,7 +198,7 @@ func (s *session) handlePackage() {
 
 ```go
 func (s *session) handleTCPPackage() error {
-  // 省略部分代码
+        // 省略部分代码
 
 	conn = s.Connection.(*gettyTCPConn)
 	for {
