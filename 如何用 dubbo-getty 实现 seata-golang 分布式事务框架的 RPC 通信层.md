@@ -541,7 +541,7 @@ func (coordinator *DefaultCoordinator) OnCron(session getty.Session) {
 }
 ```
 
-消息进入 `coordinator.OnTrxMessage(rpcMessage, session)` 方法，将按照消息的类型码路由到具体的逻辑当中：
+消息进入 `coordinator.OnTrxMessage(rpcMessage, session)` 方法，将按照消息的 TypeCode 路由到具体的逻辑当中：
 
 ```go
 	switch msg.GetTypeCode() {
