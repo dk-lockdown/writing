@@ -584,7 +584,7 @@ func (coordinator *DefaultCoordinator) OnCron(session getty.Session) {
 
 [seata-golang](https://github.com/transaction-wg/seata-golang)  从今年 4 月份开始开发，到 8 月份基本实现和 java 版 [seata 1.2](https://github.com/seata/seata) 协议的互通，对 mysql 数据库实现了 AT 模式（自动协调分布式事务的提交回滚），实现了 TCC 模式，TC 端使用 mysql 存储数据，使 TC 变成一个无状态应用支持高可用部署。下图展示了 AT 模式的原理：
 
-![seata at 原理图](/Users/scottlewis/dksl/git/writing/pic/image20201205-232516.png)
+![seata at 原理图](https://github.com/dk-lockdown/writing/blob/master/pic/image20201205-232516.png)
 
 后续，还有许多工作可以做，比如：对注册中心的支持、对配置中心的支持、和 java 版 seata 1.4 的协议互通、其他数据库的支持、raft transaction coordinator 的实现等，希望对分布式事务问题感兴趣的开发者可以加入进来一起来打造一个完善的 golang 的分布式事务框架。
 
