@@ -24,7 +24,7 @@ func (c *client) connect() {
 	)
 
 	for {
-    // 建立一个 session 连接
+                // 建立一个 session 连接
 		ss = c.dial()
 		if ss == nil {
 			// client has been closed
@@ -32,7 +32,7 @@ func (c *client) connect() {
 		}
 		err = c.newSession(ss)
 		if err == nil {
-      // 收发报文
+                        // 收发报文
 			ss.(*session).run()
 			// 此处省略部分代码
       
@@ -84,7 +84,7 @@ func (c *client) dialTCP() Session {
 				conn, err = tls.DialWithDialer(d, "tcp", c.addr, sslConfig)
 			}
 		} else {
-      // 建立 tcp 连接
+                        // 建立 tcp 连接
 			conn, err = net.DialTimeout("tcp", c.addr, connectTimeout)
 		}
 		if err == nil && gxnet.IsSameAddr(conn.RemoteAddr(), conn.LocalAddr()) {
@@ -92,7 +92,7 @@ func (c *client) dialTCP() Session {
 			err = errSelfConnect
 		}
 		if err == nil {
-      // 返回一个 TCPSession
+                        // 返回一个 TCPSession
 			return newTCPSession(conn, c)
 		}
 
@@ -134,15 +134,15 @@ func (s *session) handleLoop() {
 
 			iovec = iovec[:0]
 			for idx := 0; idx < maxIovecNum; idx++ {
-        // 通过 s.writer 将 interface{} 类型的 outPkg 编码成二进制的比特
+                                // 通过 s.writer 将 interface{} 类型的 outPkg 编码成二进制的比特
 				pkgBytes, err = s.writer.Write(s, outPkg)
 				// 省略部分代码
         
 				iovec = append(iovec, pkgBytes)
 
-        //省略部分代码
+                                //省略部分代码
 			}
-      // 将这些二进制比特发送出去
+                        // 将这些二进制比特发送出去
 			err = s.WriteBytesArray(iovec[:]...)
 			if err != nil {
 				log.Errorf("%s, [session.handleLoop]s.WriteBytesArray(iovec len:%d) = error:%+v",
@@ -160,7 +160,7 @@ func (s *session) handleLoop() {
 						log.Warnf("wsConn.writePing() = error:%+v", perrors.WithStack(err))
 					}
 				}
-        // 定时执行的逻辑，心跳等
+                                // 定时执行的逻辑，心跳等
 				s.listener.OnCron(s)
 			}
 		}
@@ -208,7 +208,7 @@ func (s *session) handleTCPPackage() error {
 		for {
 			// for clause for the network timeout condition check
 			// s.conn.SetReadTimeout(time.Now().Add(s.rTimeout))
-      // 从 TCP 连接中收到报文
+                        // 从 TCP 连接中收到报文
 			bufLen, err = conn.recv(buf)
 			// 省略部分代码
       
@@ -216,18 +216,18 @@ func (s *session) handleTCPPackage() error {
 		}
 		// 省略部分代码
     
-    // 将收到的报文二进制比特写入 pkgBuf
+                // 将收到的报文二进制比特写入 pkgBuf
 		pktBuf.Write(buf[:bufLen])
 		for {
 			if pktBuf.Len() <= 0 {
 				break
 			}
-      // 通过 s.reader 将收到的报文解码成 RPC 消息
+                        // 通过 s.reader 将收到的报文解码成 RPC 消息
 			pkg, pkgLen, err = s.reader.Read(s, pktBuf.Bytes())
 			// 省略部分代码
 
-      s.UpdateActive()
-      // 将收到的消息放入 TaskQueue 供 RPC 消费端消费
+                        s.UpdateActive()
+                        // 将收到的消息放入 TaskQueue 供 RPC 消费端消费
 			s.addTask(pkg)
 			pktBuf.Next(pkgLen)
 			// continue to handle case 5
@@ -369,7 +369,7 @@ type EventListener interface {
 
 下面是 seata 协议的定义：
 
-![image-20201205214556457](/Users/scottlewis/dksl/git/writing/pic/image-20201205214556457.png)
+![image-20201205214556457](https://github.com/dk-lockdown/writing/blob/master/pic/image-20201205214556457.png)
 
 在 ReadWriter 接口的实现 [`RpcPackageHandler`](https://github.com/opentrx/seata-golang) 中，调用 Codec 方法对消息体按照上面的格式编解码：
 
@@ -408,10 +408,10 @@ func (client *RpcRemoteClient) OnOpen(session getty.Session) error {
 			ApplicationId:           client.conf.ApplicationId,
 			TransactionServiceGroup: client.conf.TransactionServiceGroup,
 		}}
-    // 建立连接后向 Transaction Coordinator 发起注册 TransactionManager 的请求
+                // 建立连接后向 Transaction Coordinator 发起注册 TransactionManager 的请求
 		_, err := client.sendAsyncRequestWithResponse(session, request, RPC_REQUEST_TIMEOUT)
 		if err == nil {
-      // 将与 Transaction Coordinator 建立的连接保存在连接池供后续使用
+                        // 将与 Transaction Coordinator 建立的连接保存在连接池供后续使用
 			clientSessionManager.RegisterGettySession(session)
 			client.GettySessionOnOpenChannel <- session.RemoteAddr()
 		}
@@ -460,7 +460,7 @@ func (client *RpcRemoteClient) OnMessage(session getty.Session, pkg interface{})
 
 // OnCron ...
 func (client *RpcRemoteClient) OnCron(session getty.Session) {
-  // 发送心跳
+        // 发送心跳
 	client.defaultSendRequest(session, protocal.HeartBeatMessagePing)
 }
 ```
@@ -477,7 +477,7 @@ func (coordinator *DefaultCoordinator) OnOpen(session getty.Session) error {
 
 func (coordinator *DefaultCoordinator) OnError(session getty.Session, err error) {
 	// 释放 TCP 连接
-  SessionManager.ReleaseGettySession(session)
+        SessionManager.ReleaseGettySession(session)
 	session.Close()
 	log.Errorf("getty_session{%s} got error{%v}, will be closed.", session.Stat(), err)
 }
@@ -492,7 +492,7 @@ func (coordinator *DefaultCoordinator) OnMessage(session getty.Session, pkg inte
 	if ok {
 		_, isRegTM := rpcMessage.Body.(protocal.RegisterTMRequest)
 		if isRegTM {
-      // 将 TransactionManager 信息和 TCP 连接建立映射关系
+                        // 将 TransactionManager 信息和 TCP 连接建立映射关系
 			coordinator.OnRegTmMessage(rpcMessage, session)
 			return
 		}
@@ -508,7 +508,7 @@ func (coordinator *DefaultCoordinator) OnMessage(session getty.Session, pkg inte
 			log.Debugf("msgId:%s, body:%v", rpcMessage.Id, rpcMessage.Body)
 			_, isRegRM := rpcMessage.Body.(protocal.RegisterRMRequest)
 			if isRegRM {
-        // 将 ResourceManager 信息和 TCP 连接建立映射关系
+                                // 将 ResourceManager 信息和 TCP 连接建立映射关系
 				coordinator.OnRegRmMessage(rpcMessage, session)
 			} else {
 				if SessionManager.IsRegistered(session) {
@@ -517,7 +517,7 @@ func (coordinator *DefaultCoordinator) OnMessage(session getty.Session, pkg inte
 							log.Errorf("Catch Exception while do RPC, request: %v,err: %w", rpcMessage, err)
 						}
 					}()
-          // 处理事务消息，全局事务注册、分支事务注册、分支事务提交、全局事务回滚等
+                                        // 处理事务消息，全局事务注册、分支事务注册、分支事务提交、全局事务回滚等
 					coordinator.OnTrxMessage(rpcMessage, session)
 				} else {
 					session.Close()
