@@ -626,7 +626,7 @@ var (
 
 #### 三、seata-golang committer 招募
 
-[seata-golang](https://github.com/transaction-wg/seata-golang)  从今年 4 月份开始开发，到 8 月份基本实现和 java 版 [seata 1.2](https://github.com/seata/seata) 协议的互通，对 mysql 数据库实现了 AT 模式（自动协调分布式事务的提交回滚），实现了 TCC 模式，TC 端使用 mysql 存储数据，使 TC 变成一个无状态应用支持高可用部署。下图展示了 AT 模式的原理：
+[seata-golang](https://github.com/opentrx/seata-golang)  从今年 4 月份开始开发，到 8 月份基本实现和 java 版 [seata 1.2](https://github.com/seata/seata) 协议的互通，对 mysql 数据库实现了 AT 模式（自动协调分布式事务的提交回滚），实现了 TCC 模式，TC 端使用 mysql 存储数据，使 TC 变成一个无状态应用支持高可用部署。下图展示了 AT 模式的原理：
 
 ![seata at 原理图](https://github.com/dk-lockdown/writing/blob/master/pic/image20201205-232516.png)
 
@@ -638,7 +638,7 @@ seata 官方：https://seata.io
 
 java 版 seata：https://github.com/seata/seata
 
-seata-golang 项目地址：https://github.com/transaction-wg/seata-golang
+seata-golang 项目地址：https://github.com/opentrx/seata-golang
 
 seata-golang go 夜读 b站分享：https://www.bilibili.com/video/BV1oz411e72T
 
