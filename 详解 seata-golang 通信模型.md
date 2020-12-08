@@ -24,7 +24,7 @@ func (c *client) connect() {
 	)
 
 	for {
-                // 建立一个 session 连接
+    // 建立一个 session 连接
 		ss = c.dial()
 		if ss == nil {
 			// client has been closed
@@ -32,7 +32,7 @@ func (c *client) connect() {
 		}
 		err = c.newSession(ss)
 		if err == nil {
-                        // 收发报文
+      // 收发报文
 			ss.(*session).run()
 			// 此处省略部分代码
       
@@ -84,7 +84,7 @@ func (c *client) dialTCP() Session {
 				conn, err = tls.DialWithDialer(d, "tcp", c.addr, sslConfig)
 			}
 		} else {
-                        // 建立 tcp 连接
+      // 建立 tcp 连接
 			conn, err = net.DialTimeout("tcp", c.addr, connectTimeout)
 		}
 		if err == nil && gxnet.IsSameAddr(conn.RemoteAddr(), conn.LocalAddr()) {
@@ -92,7 +92,7 @@ func (c *client) dialTCP() Session {
 			err = errSelfConnect
 		}
 		if err == nil {
-                        // 返回一个 TCPSession
+      // 返回一个 TCPSession
 			return newTCPSession(conn, c)
 		}
 
@@ -134,15 +134,15 @@ func (s *session) handleLoop() {
 
 			iovec = iovec[:0]
 			for idx := 0; idx < maxIovecNum; idx++ {
-                                // 通过 s.writer 将 interface{} 类型的 outPkg 编码成二进制的比特
+        // 通过 s.writer 将 interface{} 类型的 outPkg 编码成二进制的比特
 				pkgBytes, err = s.writer.Write(s, outPkg)
 				// 省略部分代码
         
 				iovec = append(iovec, pkgBytes)
 
-                                //省略部分代码
+        //省略部分代码
 			}
-                        // 将这些二进制比特发送出去
+      // 将这些二进制比特发送出去
 			err = s.WriteBytesArray(iovec[:]...)
 			if err != nil {
 				log.Errorf("%s, [session.handleLoop]s.WriteBytesArray(iovec len:%d) = error:%+v",
@@ -160,7 +160,7 @@ func (s *session) handleLoop() {
 						log.Warnf("wsConn.writePing() = error:%+v", perrors.WithStack(err))
 					}
 				}
-                                // 定时执行的逻辑，心跳等
+        // 定时执行的逻辑，心跳等
 				s.listener.OnCron(s)
 			}
 		}
@@ -216,18 +216,18 @@ func (s *session) handleTCPPackage() error {
 		}
 		// 省略部分代码
     
-                // 将收到的报文二进制比特写入 pkgBuf
+    // 将收到的报文二进制比特写入 pkgBuf
 		pktBuf.Write(buf[:bufLen])
 		for {
 			if pktBuf.Len() <= 0 {
 				break
 			}
-                        // 通过 s.reader 将收到的报文解码成 RPC 消息
+      // 通过 s.reader 将收到的报文解码成 RPC 消息
 			pkg, pkgLen, err = s.reader.Read(s, pktBuf.Bytes())
 			// 省略部分代码
 
-                        s.UpdateActive()
-                        // 将收到的消息放入 TaskQueue 供 RPC 消费端消费
+      s.UpdateActive()
+      // 将收到的消息放入 TaskQueue 供 RPC 消费端消费
 			s.addTask(pkg)
 			pktBuf.Next(pkgLen)
 			// continue to handle case 5
@@ -408,10 +408,10 @@ func (client *RpcRemoteClient) OnOpen(session getty.Session) error {
 			ApplicationId:           client.conf.ApplicationId,
 			TransactionServiceGroup: client.conf.TransactionServiceGroup,
 		}}
-                // 建立连接后向 Transaction Coordinator 发起注册 TransactionManager 的请求
+    // 建立连接后向 Transaction Coordinator 发起注册 TransactionManager 的请求
 		_, err := client.sendAsyncRequestWithResponse(session, request, RPC_REQUEST_TIMEOUT)
 		if err == nil {
-                        // 将与 Transaction Coordinator 建立的连接保存在连接池供后续使用
+      // 将与 Transaction Coordinator 建立的连接保存在连接池供后续使用
 			clientSessionManager.RegisterGettySession(session)
 			client.GettySessionOnOpenChannel <- session.RemoteAddr()
 		}
@@ -460,10 +460,12 @@ func (client *RpcRemoteClient) OnMessage(session getty.Session, pkg interface{})
 
 // OnCron ...
 func (client *RpcRemoteClient) OnCron(session getty.Session) {
-        // 发送心跳
+  // 发送心跳
 	client.defaultSendRequest(session, protocal.HeartBeatMessagePing)
 }
 ```
+
+`clientSessionManager.RegisterGettySession(session)` 的逻辑 4.4 小节分析。
 
 ######  4.3 Server 端 Transaction Coordinator 实现
 
@@ -477,7 +479,7 @@ func (coordinator *DefaultCoordinator) OnOpen(session getty.Session) error {
 
 func (coordinator *DefaultCoordinator) OnError(session getty.Session, err error) {
 	// 释放 TCP 连接
-        SessionManager.ReleaseGettySession(session)
+  SessionManager.ReleaseGettySession(session)
 	session.Close()
 	log.Errorf("getty_session{%s} got error{%v}, will be closed.", session.Stat(), err)
 }
@@ -492,7 +494,7 @@ func (coordinator *DefaultCoordinator) OnMessage(session getty.Session, pkg inte
 	if ok {
 		_, isRegTM := rpcMessage.Body.(protocal.RegisterTMRequest)
 		if isRegTM {
-                        // 将 TransactionManager 信息和 TCP 连接建立映射关系
+      // 将 TransactionManager 信息和 TCP 连接建立映射关系
 			coordinator.OnRegTmMessage(rpcMessage, session)
 			return
 		}
@@ -508,7 +510,7 @@ func (coordinator *DefaultCoordinator) OnMessage(session getty.Session, pkg inte
 			log.Debugf("msgId:%s, body:%v", rpcMessage.Id, rpcMessage.Body)
 			_, isRegRM := rpcMessage.Body.(protocal.RegisterRMRequest)
 			if isRegRM {
-                                // 将 ResourceManager 信息和 TCP 连接建立映射关系
+        // 将 ResourceManager 信息和 TCP 连接建立映射关系
 				coordinator.OnRegRmMessage(rpcMessage, session)
 			} else {
 				if SessionManager.IsRegistered(session) {
@@ -517,7 +519,7 @@ func (coordinator *DefaultCoordinator) OnMessage(session getty.Session, pkg inte
 							log.Errorf("Catch Exception while do RPC, request: %v,err: %w", rpcMessage, err)
 						}
 					}()
-                                        // 处理事务消息，全局事务注册、分支事务注册、分支事务提交、全局事务回滚等
+          // 处理事务消息，全局事务注册、分支事务注册、分支事务提交、全局事务回滚等
 					coordinator.OnTrxMessage(rpcMessage, session)
 				} else {
 					session.Close()
@@ -540,6 +542,8 @@ func (coordinator *DefaultCoordinator) OnCron(session getty.Session) {
 
 }
 ```
+
+`coordinator.OnRegTmMessage(rpcMessage, session)` 注册 Transaction Manager，`coordinator.OnRegRmMessage(rpcMessage, session)` 注册 Resource Manager。具体逻辑分析见 4.4 小节。
 
 消息进入 `coordinator.OnTrxMessage(rpcMessage, session)` 方法，将按照消息的 TypeCode 路由到具体的逻辑当中：
 
@@ -578,7 +582,47 @@ func (coordinator *DefaultCoordinator) OnCron(session getty.Session) {
 	}
 ```
 
-至此，我们就实现了一个完整的 RPC 通信调用逻辑。
+###### 4.4 session manager 分析
+
+Client 端同 Transaction Coordinator 建立连接起连接后，通过 `clientSessionManager.RegisterGettySession(session)` 将连接保存在 `serverSessions = sync.Map{}` 这个 map 中。map 的 key 为从 session 中获取的 RemoteAddress 即 Transaction Coordinator 的地址，value 为 session。这样，Client 端就可以通过 map 中的一个 session 来向 Transaction Coordinator 注册 Transaction Manager 和 Resource Manager 了。具体代码见 [`getty_client_session_manager.go`](https://github.com/opentrx/seata-golang/blob/dev/pkg/client/getty_client_session_manager.go)。
+
+Transaction Manager 和 Resouce Manager 注册到 Transaction Coordinator 后，一个连接既有可能用来发送 TM 消息也有可能用来发送 RM 消息。我们通过 RpcContext 来标识一个连接信息：
+
+```go
+type RpcContext struct {
+	Version                 string
+	TransactionServiceGroup string
+	ClientRole              meta.TransactionRole
+	ApplicationId           string
+	ClientId                string
+	ResourceSets            *model.Set
+	Session                 getty.Session
+}
+```
+
+当事务消息过来时，我们需要构造这样一个 RpcContext 供后续事务处理逻辑使用。所以，我们会构造下列 map 来缓存映射关系：
+
+```go
+var (
+	// session -> transactionRole
+	// TM will register before RM, if a session is not the TM registered,
+	// it will be the RM registered
+	session_transactionroles = sync.Map{}
+
+	// session -> applicationId
+	identified_sessions = sync.Map{}
+
+	// applicationId -> ip -> port -> session
+	client_sessions = sync.Map{}
+
+	// applicationId -> resourceIds
+	client_resources = sync.Map{}
+)
+```
+
+这样，Tansaction Manager 和 Resource Manager 分别通过 `coordinator.OnRegTmMessage(rpcMessage, session)` 和 `coordinator.OnRegRmMessage(rpcMessage, session)` 注册到 Transaction Coordinator 时，会在上述 client_sessions map 中缓存 appicationId、ip、port 与 session 的关系，在 client_resources map 中缓存 application 与 resourceIds（一个应用可能存在多个 Resource Manager） 的关系。在需要时，我们就可以通过上述映射关系构造一个 RpcContext。这部分的实现和 java 版 seata 有很大的不同，感兴趣的可以深入了解一下。具体代码见 [`getty_session_manager.go`](https://github.com/opentrx/seata-golang/blob/dev/tc/server/getty_session_manager.go)。
+
+至此，我们就分析完了 [seata-golang](https://github.com/opentrx/seata-golang) 整个 RPC 通信模型的机制。
 
 #### 三、seata-golang committer 招募
 
