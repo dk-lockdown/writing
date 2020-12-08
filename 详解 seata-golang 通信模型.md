@@ -586,7 +586,7 @@ func (coordinator *DefaultCoordinator) OnCron(session getty.Session) {
 
 Client 端同 Transaction Coordinator 建立连接起连接后，通过 `clientSessionManager.RegisterGettySession(session)` 将连接保存在 `serverSessions = sync.Map{}` 这个 map 中。map 的 key 为从 session 中获取的 RemoteAddress 即 Transaction Coordinator 的地址，value 为 session。这样，Client 端就可以通过 map 中的一个 session 来向 Transaction Coordinator 注册 Transaction Manager 和 Resource Manager 了。具体代码见 [`getty_client_session_manager.go`](https://github.com/opentrx/seata-golang/blob/dev/pkg/client/getty_client_session_manager.go)。
 
-Transaction Manager 和 Resouce Manager 注册到 Transaction Coordinator 后，一个连接既有可能用来发送 TM 消息也有可能用来发送 RM 消息。我们通过 RpcContext 来标识一个连接信息：
+Transaction Manager 和 Resource Manager 注册到 Transaction Coordinator 后，一个连接既有可能用来发送 TM 消息也有可能用来发送 RM 消息。我们通过 RpcContext 来标识一个连接信息：
 
 ```go
 type RpcContext struct {
@@ -620,7 +620,7 @@ var (
 )
 ```
 
-这样，Tansaction Manager 和 Resource Manager 分别通过 `coordinator.OnRegTmMessage(rpcMessage, session)` 和 `coordinator.OnRegRmMessage(rpcMessage, session)` 注册到 Transaction Coordinator 时，会在上述 client_sessions map 中缓存 appicationId、ip、port 与 session 的关系，在 client_resources map 中缓存 application 与 resourceIds（一个应用可能存在多个 Resource Manager） 的关系。在需要时，我们就可以通过上述映射关系构造一个 RpcContext。这部分的实现和 java 版 seata 有很大的不同，感兴趣的可以深入了解一下。具体代码见 [`getty_session_manager.go`](https://github.com/opentrx/seata-golang/blob/dev/tc/server/getty_session_manager.go)。
+这样，Transaction Manager 和 Resource Manager 分别通过 `coordinator.OnRegTmMessage(rpcMessage, session)` 和 `coordinator.OnRegRmMessage(rpcMessage, session)` 注册到 Transaction Coordinator 时，会在上述 client_sessions map 中缓存 applicationId、ip、port 与 session 的关系，在 client_resources map 中缓存 applicationId 与 resourceIds（一个应用可能存在多个 Resource Manager） 的关系。在需要时，我们就可以通过上述映射关系构造一个 RpcContext。这部分的实现和 java 版 seata 有很大的不同，感兴趣的可以深入了解一下。具体代码见 [`getty_session_manager.go`](https://github.com/opentrx/seata-golang/blob/dev/tc/server/getty_session_manager.go)。
 
 至此，我们就分析完了 [seata-golang](https://github.com/opentrx/seata-golang) 整个 RPC 通信模型的机制。
 
