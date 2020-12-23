@@ -1,5 +1,57 @@
 ### k8s 其中一个节点发生网络隔离导致 kubectl get 命令变慢分析
 
+kubectl get pod --v=7 日志如下：
+
+```
+I1222 16:18:57.450663   50246 loader.go:359] Config loaded from file /etc/origin/master/admin.kubeconfig
+I1222 16:18:57.451507   50246 loader.go:359] Config loaded from file /etc/origin/master/admin.kubeconfig
+I1222 16:18:57.453084   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s
+I1222 16:18:57.453100   50246 round_trippers.go:390] Request Headers:
+I1222 16:18:57.453110   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:18:57.453117   50246 round_trippers.go:393]     Accept: application/json, */*
+I1222 16:18:57.453150   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s
+I1222 16:18:57.453175   50246 round_trippers.go:390] Request Headers:
+I1222 16:18:57.453187   50246 round_trippers.go:393]     Accept: application/json, */*
+I1222 16:18:57.453198   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:19:29.452981   50246 round_trippers.go:408] Response Status:  in 31999 milliseconds
+I1222 16:19:29.453055   50246 cached_discovery.go:77] skipped caching discovery info due to Get https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s: context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+I1222 16:19:29.453181   50246 round_trippers.go:408] Response Status:  in 31999 milliseconds
+I1222 16:19:29.453238   50246 cached_discovery.go:77] skipped caching discovery info due to Get https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s: context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+I1222 16:19:29.454230   50246 loader.go:359] Config loaded from file /etc/origin/master/admin.kubeconfig
+I1222 16:19:29.454897   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s
+I1222 16:19:29.454909   50246 round_trippers.go:390] Request Headers:
+I1222 16:19:29.454916   50246 round_trippers.go:393]     Accept: application/json, */*
+I1222 16:19:29.454923   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:19:29.455103   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s
+I1222 16:19:29.455117   50246 round_trippers.go:390] Request Headers:
+I1222 16:19:29.455124   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:19:29.455137   50246 round_trippers.go:393]     Accept: application/json, */*
+I1222 16:20:01.455029   50246 round_trippers.go:408] Response Status:  in 32000 milliseconds
+I1222 16:20:01.455095   50246 cached_discovery.go:77] skipped caching discovery info due to Get https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s: context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+I1222 16:20:01.455205   50246 round_trippers.go:408] Response Status:  in 32000 milliseconds
+I1222 16:20:01.455250   50246 cached_discovery.go:77] skipped caching discovery info due to Get https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s: net/http: request canceled (Client.Timeout exceeded while awaiting headers)
+I1222 16:20:01.455287   50246 shortcut.go:89] Error loading discovery information: unable to retrieve the complete list of server APIs: custom.metrics.k8s.io/v1beta1: Get https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s: net/http: request canceled (Client.Timeout exceeded while awaiting headers), metrics.k8s.io/v1beta1: Get https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s: context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+I1222 16:20:01.458202   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s
+I1222 16:20:01.458217   50246 round_trippers.go:390] Request Headers:
+I1222 16:20:01.458224   50246 round_trippers.go:393]     Accept: application/json, */*
+I1222 16:20:01.458230   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:20:33.458396   50246 round_trippers.go:408] Response Status:  in 32000 milliseconds
+I1222 16:20:33.458451   50246 cached_discovery.go:77] skipped caching discovery info due to Get https://vip.cluster.local:8443/apis/custom.metrics.k8s.io/v1beta1?timeout=32s: net/http: request canceled (Client.Timeout exceeded while awaiting headers)
+I1222 16:20:33.458567   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s
+I1222 16:20:33.458576   50246 round_trippers.go:390] Request Headers:
+I1222 16:20:33.458585   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:20:33.458594   50246 round_trippers.go:393]     Accept: application/json, */*
+I1222 16:21:05.458773   50246 round_trippers.go:408] Response Status:  in 32000 milliseconds
+I1222 16:21:05.458852   50246 cached_discovery.go:77] skipped caching discovery info due to Get https://vip.cluster.local:8443/apis/metrics.k8s.io/v1beta1?timeout=32s: context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+I1222 16:21:05.461165   50246 loader.go:359] Config loaded from file /etc/origin/master/admin.kubeconfig
+I1222 16:21:05.461475   50246 round_trippers.go:383] GET https://vip.cluster.local:8443/api/v1/nodes?limit=500
+I1222 16:21:05.461487   50246 round_trippers.go:390] Request Headers:
+I1222 16:21:05.461495   50246 round_trippers.go:393]     Accept: application/json;as=Table;v=v1beta1;g=meta.k8s.io, application/json
+I1222 16:21:05.461502   50246 round_trippers.go:393]     User-Agent: kubectl/v1.11.0+d4cacc0 (linux/amd64) kubernetes/d4cacc0
+I1222 16:21:05.464912   50246 round_trippers.go:408] Response Status: 200 OK in 3 milliseconds
+I1222 16:21:05.466050   50246 get.go:443] no kind is registered for the type v1beta1.Table in scheme "k8s.io/kubernetes/pkg/api/legacyscheme/scheme.go:29"
+```
+
 staging/src/k8s.io/kubectl/pkg/cmd/get/get.go：
 
 1. 入口：
